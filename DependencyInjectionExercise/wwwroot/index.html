@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BookStore - Bug Hunter Exercise</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body { background-color: #f8f9fa; }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+        .nav-link.active-page { background-color: rgba(255,255,255,0.2) !important; border-radius: 4px; }
+        .bug-item { border: 1px solid #dee2e6; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; background: #fff; }
+        .bug-id { display: inline-block; background: #6c757d; color: white; padding: 2px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .repro-steps { background: #f8f9fa; border-radius: 6px; padding: 0.75rem 1rem; margin-top: 0.75rem; }
+        .repro-steps ol { margin-bottom: 0; padding-left: 1.25rem; }
+        .repro-steps li { margin-bottom: 0.35rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-dark bg-dark px-3">
+    <span class="navbar-brand mb-0 h1">BookStore - Bug Hunter Exercise</span>
+    <div class="d-flex gap-2">
+        <a href="#" class="btn btn-outline-light btn-sm nav-btn" data-page="books">Books</a>
+        <a href="#" class="btn btn-outline-light btn-sm nav-btn" data-page="orders">Orders</a>
+        <a href="#" class="btn btn-warning btn-sm nav-btn" data-page="place-order">Place Order</a>
+        <a href="#" class="btn btn-outline-info btn-sm nav-btn" data-page="bug-list">Bug List</a>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <!-- ============================================================ -->
+    <!-- BOOKS PAGE -->
+    <!-- ============================================================ -->
+    <div id="page-books" class="page-section active">
+        <h1>Book Catalog</h1>
+        <p class="text-muted">Browse available books and their stock levels.</p>
+        <div id="books-grid" class="row"></div>
+        <button class="btn btn-outline-secondary mt-2" onclick="loadBooks()">Refresh</button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PLACE ORDER PAGE -->
+    <!-- ============================================================ -->
+    <div id="page-place-order" class="page-section">
+        <h1>Place an Order</h1>
+        <p class="text-muted">Select a book and place an order.</p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Book</label>
+                            <select id="order-book" class="form-select">
+                                <option value="0">-- Select a book --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Customer Name</label>
+                            <input id="order-name" class="form-control" placeholder="e.g. Alice" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input id="order-email" class="form-control" placeholder="alice@example.com" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input id="order-phone" class="form-control" placeholder="+1234567890" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Quantity</label>
+                            <input id="order-qty" type="number" class="form-control" value="1" min="1" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notification Method</label>
+                            <select id="order-notify" class="form-select">
+                                <option value="email">Email</option>
+                                <option value="sms">SMS</option>
+                                <option value="push">Push</option>
+                            </select>
+                        </div>
+                        <button id="btn-place-order" class="btn btn-primary" onclick="placeOrder()">Place Order</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="order-result" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ORDERS PAGE -->
+    <!-- ============================================================ -->
+    <div id="page-orders" class="page-section">
+        <h1>Order History</h1>
+        <div id="orders-content"></div>
+        <button class="btn btn-outline-secondary mt-2" onclick="loadOrders()">Refresh</button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- BUG LIST PAGE -->
+    <!-- ============================================================ -->
+    <div id="page-bug-list" class="page-section">
+        <h1>Bug List</h1>
+        <p class="text-muted">The following bugs have been reported by QA. Your task is to investigate the code, find the root cause, and fix each one.</p>
+
+        <div class="bug-item">
+            <span class="bug-id">BUG-001</span>
+            <h5>Wrong discount applied - customers receive discounts they shouldn't get</h5>
+            <p>
+                The system has a "loyalty bonus" that gives an extra 5% discount on every 3rd order a customer places.
+                However, the order counter seems to be shared across all customers. A brand new customer can receive
+                the loyalty bonus on their very first order if other customers placed orders before them.
+            </p>
+            <div class="repro-steps">
+                <strong>Steps to reproduce:</strong>
+                <ol>
+                    <li>Go to <strong>Place Order</strong></li>
+                    <li>Place an order as <strong>"Alice"</strong> - select any book, quantity <strong>1</strong>, place the order. Note the discount is 0%</li>
+                    <li>Place a second order as <strong>"Alice"</strong> - same setup, quantity <strong>1</strong>. Discount is still 0%</li>
+                    <li>Now place an order as a completely new customer <strong>"Bob"</strong> - select any book, quantity <strong>1</strong>, place the order</li>
+                    <li>Go to the <strong>Orders</strong> page and check Bob's order</li>
+                    <li><strong>Expected:</strong> Bob's first order should have 0% discount (he is a new customer, this is his 1st order)</li>
+                    <li><strong>Actual:</strong> Bob gets a 5% loyalty bonus! The order counter from Alice's orders carried over to Bob</li>
+                    <li>You can also verify by calling <code>GET /api/orders/debug/discount-state</code> in your browser - the order counter keeps incrementing across all customers</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="bug-item">
+            <span class="bug-id">BUG-002</span>
+            <h5>Order tracking note is always empty</h5>
+            <p>
+                When an order is placed, the system is supposed to generate a tracking note (e.g. "Order placed for 5x 'Dune'")
+                and save it with the order. However, the tracking note is always <code>null</code> when you view the order afterwards.
+            </p>
+            <div class="repro-steps">
+                <strong>Steps to reproduce:</strong>
+                <ol>
+                    <li>Go to <strong>Place Order</strong> and place any valid order</li>
+                    <li>After the order is placed, check the result - the Tracking Note field shows <code>NULL</code></li>
+                    <li>Go to the <strong>Orders</strong> page and look at the Tracking Note column</li>
+                    <li><strong>Expected:</strong> Each order should have a tracking note like "[abc123] Order placed for 3x 'Dune'"</li>
+                    <li><strong>Actual:</strong> The Tracking Note column is always empty/null for every order</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="bug-item">
+            <span class="bug-id">BUG-003</span>
+            <h5>"Push" notification does not work, and adding new notification channels is too difficult</h5>
+            <p>
+                Users can select "Push" as a notification method when placing an order, but no push notification
+                is ever sent. The order is created successfully but the notification is silently skipped.
+                Email and SMS notifications work correctly.
+            </p>
+            <p>
+                Additionally, the product team plans to add more notification channels in the future (e.g. webhook, Slack).
+                The notification system should be designed so that adding a new channel only requires creating
+                one new class and adding one line of service registration, without modifying any existing code.
+            </p>
+            <div class="repro-steps">
+                <strong>Steps to reproduce:</strong>
+                <ol>
+                    <li>Go to <strong>Place Order</strong></li>
+                    <li>Fill in all fields and select <strong>"Push"</strong> as the notification method</li>
+                    <li>Place the order - the order is created successfully</li>
+                    <li>Call <code>GET /api/notifications</code> in your browser</li>
+                    <li><strong>Expected:</strong> A push notification entry should appear in the notification log</li>
+                    <li><strong>Actual:</strong> No notification is logged. The push channel is silently ignored</li>
+                </ol>
+            </div>
+            <div class="repro-steps mt-2">
+                <strong>Acceptance criteria:</strong>
+                <ol>
+                    <li>Push notifications must work and appear in the notification log</li>
+                    <li>To verify extensibility: try adding a "webhook" channel after your fix - it should require only one new class and one line of registration, with zero changes to existing files</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="bug-item">
+            <span class="bug-id">BUG-004</span>
+            <h5>No separation between API layer and business logic</h5>
+            <p>
+                All business rules (validation, price calculation, discount logic, stock management, notification dispatch)
+                are written directly inside the API controllers. There is no service layer or data access layer.
+                This makes the code hard to test, hard to maintain, and violates clean architecture principles.
+            </p>
+            <div class="repro-steps">
+                <strong>Steps to reproduce:</strong>
+                <ol>
+                    <li>Open <code>BooksController.cs</code> and <code>OrdersController.cs</code></li>
+                    <li>Observe that the controllers directly access the database context</li>
+                    <li>Observe that business rules (discount calculation, stock validation, price computation) are all in the controllers</li>
+                    <li><strong>Expected:</strong> Controllers should only handle HTTP request/response. Business logic should be in a service layer. Database access should be in a repository layer.</li>
+                    <li><strong>Actual:</strong> Everything is mixed together in the controllers</li>
+                </ol>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
