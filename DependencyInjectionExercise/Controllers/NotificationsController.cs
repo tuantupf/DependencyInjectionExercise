@@ -1,4 +1,4 @@
-using DependencyInjectionExercise.Services;
+using DependencyInjectionExercise.Infrastructure.Notifications;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DependencyInjectionExercise.Controllers;

@@ -1,4 +1,4 @@
-namespace DependencyInjectionExercise.Services;
+namespace DependencyInjectionExercise.Infrastructure.Tracking;
 
 public class OrderTrackingService
 {

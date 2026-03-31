@@ -1,6 +1,6 @@
 using DependencyInjectionExercise.Models;
 
-namespace DependencyInjectionExercise.Services;
+namespace DependencyInjectionExercise.Infrastructure.Notifications;
 
 public class NotificationHub
 {

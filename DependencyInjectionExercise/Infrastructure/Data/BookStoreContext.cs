@@ -1,7 +1,7 @@
 using DependencyInjectionExercise.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DependencyInjectionExercise.Data;
+namespace DependencyInjectionExercise.Infrastructure.Data;
 
 public class BookStoreContext : DbContext
 {
